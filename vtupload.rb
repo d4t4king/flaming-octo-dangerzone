@@ -173,13 +173,13 @@ if @file								# just process one file
 else									# process all files in the directory tree 
 	populate_files(@path)
 
-	counter = 0;
+	#counter = 0;
 	@files_to_check.each { |file|
 		send_file(file)			# file is full (relative) path here
 		sleep(20)
 		checked_files_to_report.push(file)
-		counter += 1
-		break if counter >= 10
+		#counter += 1
+		#break if counter >= 10
 	}
 
 	#puts "Last submission.  Check permalink and hit ENTER, when done.".light_black
