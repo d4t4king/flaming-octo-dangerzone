@@ -6,6 +6,7 @@ require 'getoptlong'
 require 'json'
 require 'uri'
 require 'readline'
+require 'pathname'
 
 opts = GetoptLong.new(
 	[ '--help', '-h', GetoptLong::NO_ARGUMENT ],
@@ -27,16 +28,13 @@ malwr.rb -f <FILE>
 end
 
 
-@apikey = ""
+@apikey = "***REMOVED***"
 @files_to_check = Array.new
 @checked_files_to_report = Array.new
 
-def send_file(__file, __path)
-	if __path && __file
-		fqfile = "#{__path}/#{__file}"
-	end
-
+def send_file(fqfile)
 	puts "Fully qualified file name: #{fqfile}"
+	__file = Pathname.new(fqfile).basename
 
 	response = JSON.parse(RestClient.post('https://www.virustotal.com/vtapi/v2/file/scan',
 		:apikey => @apikey, :file => "#{__file}", :file => File.new(fqfile)))
@@ -79,7 +77,7 @@ def get_report(__file)
 		}
 	rescue Exception => e
 		#$stderr.print "Report request files: " + $!
-		$stderr.print "Exception: #{e.inspect}".red
+		$stderr.print "Exception: #{e.inspect}\n".red
 		return 255
 	end
 end 
@@ -138,12 +136,14 @@ else									# process all files in the directory tree
 
 	counter = 0;
 	@files_to_check.each { |file|
-		send_file(file, @path)			# file is full (relative) path here
+		send_file(file)			# file is full (relative) path here
 		sleep(20)
 		@checked_files_to_report.push(file)
 		counter += 1
 		break if counter >= 10
 	}
+
+	Readline.readlin('> ', true)
 
 	@checked_files_to_report.each { |file|
 		ev = get_report(file)
