@@ -7,23 +7,33 @@ require 'json'
 require 'uri'
 require 'readline'
 require 'pathname'
+require 'csv'
 
 opts = GetoptLong.new(
 	[ '--help', '-h', GetoptLong::NO_ARGUMENT ],
 	[ '--path', '-p', GetoptLong::REQUIRED_ARGUMENT ],
-	[ '--file', '-f', GetoptLong::OPTIONAL_ARGUMENT ]
+	[ '--file', '-f', GetoptLong::REQUIRED_ARGUMENT ],
+	[ '--csv', GetoptLong::NO_ARGUMENT ]
 )
+
+def help
+	puts <<-EOF
+malwr.rb -p|--path <path> [-f|--file <FILE>] [-h|--help] [--csv]
+	EOF
+end 
 
 opts.each do |opt, arg|
 	case opt
 		when '--help'
-			puts <<-EOF
-malwr.rb -f <FILE>
-			EOF
+			help
 		when '--file'
 			@file = arg.to_s
 		when '--path'
 			@path = arg.to_s
+		when '--csv'
+			@csv = true
+		else
+			help
 	end
 end
 
@@ -82,6 +92,30 @@ def get_report(__file)
 		$stderr.print "Exception: #{e.inspect}\n".red
 	end
 end 
+
+def get_csv_report(_file)
+	begin
+		url = "https://www.virustotal.com/vtapi/v2/file/report"
+        params = {:resource => _file, :apikey => @apikey}
+        #rep_response = RestClient.post(url, params)
+        rep_response = JSON.parse(RestClient.post(url, params))
+        #puts rep_response.inspect
+		detects = Array.new
+		rep_response['scans'].sort.each { |scan|
+			if scan[1]['detected'] == true
+				if ! detects.include?("#{scan[0]}:#{scan[1]["result"]}")
+					detects.push("#{scan[0]}:#{scan[1]["result"]}")
+				end
+			end
+		}
+		csv_data = ["#{_file}", "#{rep_response['md5']}", "#{rep_response['sha1']}",
+			"#{rep_response['found']}", "#{rep_response['total']}", "#{detects.join("|")}"]
+		return csv_data
+	rescue Exception => e
+		$stderr.print "Exception #{e.inspect}\n".red
+		return nil
+	end
+end
 
 def populate_files(xpath)
 	if xpath.nil?
@@ -144,12 +178,30 @@ else									# process all files in the directory tree
 		break if counter >= 10
 	}
 
-	puts "Last submission.  Check permalink and hit ENTER, when done.".light_black
-	Readline.readline('> ', true)
+	#puts "Last submission.  Check permalink and hit ENTER, when done.".light_black
+	#Readline.readline('> ', true)
 
-	checked_files_to_report.each { |file|
-		basename = Pathname.new(file).basename
-		get_report(basename)
-		sleep(20)
-	}
+	if @csv
+		lc = 0
+		CSV.open("vtupload.csv", "wb") do |csv|
+			checked_files_to_report.each { |file|
+				basename = Pathname.new(file).basename
+				if lc == 0
+					csv << ["Filename", "MD5 Checksum", "SHA1 Checksum",
+						"Found", "Total", "Detections"]
+				else
+					line = get_csv_report(basename)
+					csv << line
+				end
+				sleep(20)
+				lc += 1
+			}
+		end
+	else
+		checked_files_to_report.each { |file|
+			basename = Pathname.new(file).basename
+			get_report(basename)
+			sleep(20)
+		}
+	end
 end
