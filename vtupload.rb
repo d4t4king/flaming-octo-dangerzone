@@ -30,7 +30,7 @@ end
 
 @apikey = "56e9b85775a320bb7f03a3728e4104484f541b141893cf574495e6cca55f5297"
 @files_to_check = Array.new
-@checked_files_to_report = Array.new
+checked_files_to_report = Array.new
 
 def send_file(fqfile)
 	puts "Fully qualified file name: #{fqfile}"
@@ -58,8 +58,10 @@ end
 def get_report(__file)
 	begin
 		url = "https://www.virustotal.com/vtapi/v2/file/report"
-		params = {:resource => __file.to_s, :apikey => @apikey}
+		params = {:resource => __file, :apikey => @apikey}
+		#rep_response = RestClient.post(url, params)
 		rep_response = JSON.parse(RestClient.post(url, params))
+		#puts rep_response.inspect
 		print "md5: "
 		puts "#{rep_response["md5"]}".green
 		print "sha1: "
@@ -78,7 +80,6 @@ def get_report(__file)
 	rescue Exception => e
 		#$stderr.print "Report request files: " + $!
 		$stderr.print "Exception: #{e.inspect}\n".red
-		return 255
 	end
 end 
 
@@ -113,9 +114,9 @@ def populate_files(xpath)
 					# shouldn't be any more directories, but needs handling
 					raise "Found directory where none expected. ### #{dir}"
 				else 
-					puts "Process file: #{dir}".green
-					if ! @files_to_check.include?("#{dir}")
-						@files_to_check.push("#{dir}")
+					puts "Process file: #{xpath}/#{dir}".green
+					if ! @files_to_check.include?("#{xpath}/#{dir}")
+						@files_to_check.push("#{xpath}/#{dir}")
 					end
 				end
 			end
@@ -125,7 +126,7 @@ end
 
 if @file								# just process one file
 	puts "send_file".green
-	send_file(@file)
+	send_file("#{@path}/#{@file}")
 	puts "Wait 300 secs..."
 	#Readline.readline('> ', true)
 	sleep(300)
@@ -138,14 +139,17 @@ else									# process all files in the directory tree
 	@files_to_check.each { |file|
 		send_file(file)			# file is full (relative) path here
 		sleep(20)
-		@checked_files_to_report.push(file)
+		checked_files_to_report.push(file)
 		counter += 1
 		break if counter >= 10
 	}
 
-	Readline.readlin('> ', true)
+	puts "Last submission.  Check permalink and hit ENTER, when done.".light_black
+	Readline.readline('> ', true)
 
-	@checked_files_to_report.each { |file|
-		ev = get_report(file)
+	checked_files_to_report.each { |file|
+		basename = Pathname.new(file).basename
+		get_report(basename)
+		sleep(20)
 	}
 end
