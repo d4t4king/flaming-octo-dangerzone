@@ -60,6 +60,8 @@ def get_report(__file)
 	begin
 		url = "https://www.virustotal.com/vtapi/v2/file/report"
 		params = {:resource => __file.to_s, :apikey => @apikey}
+		#puts params.inspect
+		#puts RestClient.post(url, params).inspect
 		rep_response = JSON.parse(RestClient.post(url, params))
 		print "md5: "
 		puts "#{rep_response["md5"]}".green
