@@ -42,7 +42,11 @@ if ! @path
 	help
 end
 
-@apikey = "56e9b85775a320bb7f03a3728e4104484f541b141893cf574495e6cca55f5297"
+if File.exists?("api.key")
+	@apikey = File.read("api.key").chomp!
+else 
+	raise "Couldn't find api.key file to get apikey!"
+end
 @files_to_check = Array.new
 checked_files_to_report = Array.new
 
@@ -85,12 +89,16 @@ def get_report(__file)
 		print "#{rep_response["positives"]}".yellow
 		print " out of ".light_black
 		puts "#{rep_response["total"]}".green
-		rep_response['scans'].sort.each { |scan|
-			if scan[1]["detected"] == true
-				print "#{scan[0]}: ".green
-				puts  "#{scan[1]["result"]}".red
-			end
-		}
+		if rep_response['scans'].count == 0
+			puts "No scans to report".yellow
+		else 
+			rep_response['scans'].sort.each { |scan|
+				if scan[1]["detected"] == true
+					print "#{scan[0]}: ".green
+					puts  "#{scan[1]["result"]}".red
+				end
+			}
+		end
 	rescue Exception => e
 		#$stderr.print "Report request files: " + $!
 		$stderr.print "Exception: #{e.inspect}\n".red
