@@ -81,12 +81,16 @@ def get_report(__file)
 		print "#{rep_response["positives"]}".yellow
 		print " out of ".light_black
 		puts "#{rep_response["total"]}".green
-		rep_response['scans'].sort.each { |scan|
-			if scan[1]["detected"] == true
-				print "#{scan[0]}: ".green
-				puts  "#{scan[1]["result"]}".red
-			end
-		}
+		if rep_response['scans'].count == 0
+			puts "No scans to report".yellow
+		else 
+			rep_response['scans'].sort.each { |scan|
+				if scan[1]["detected"] == true
+					print "#{scan[0]}: ".green
+					puts  "#{scan[1]["result"]}".red
+				end
+			}
+		end
 	rescue Exception => e
 		#$stderr.print "Report request files: " + $!
 		$stderr.print "Exception: #{e.inspect}\n".red
