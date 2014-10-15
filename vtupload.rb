@@ -18,8 +18,9 @@ opts = GetoptLong.new(
 
 def help
 	puts <<-EOF
-malwr.rb -p|--path <path> [-f|--file <FILE>] [-h|--help] [--csv]
+vtupload.rb -p|--path <path> [-f|--file <FILE>] [-h|--help] [--csv]
 	EOF
+	exit 0
 end 
 
 opts.each do |opt, arg|
@@ -37,6 +38,9 @@ opts.each do |opt, arg|
 	end
 end
 
+if ! @path
+	help
+end
 
 @apikey = "56e9b85775a320bb7f03a3728e4104484f541b141893cf574495e6cca55f5297"
 @files_to_check = Array.new
@@ -109,7 +113,7 @@ def get_csv_report(_file)
 			end
 		}
 		csv_data = ["#{_file}", "#{rep_response['md5']}", "#{rep_response['sha1']}",
-			"#{rep_response['found']}", "#{rep_response['total']}", "#{detects.join("|")}"]
+			"#{rep_response['positives']}", "#{rep_response['total']}", "#{detects.join("|")}"]
 		return csv_data
 	rescue Exception => e
 		$stderr.print "Exception #{e.inspect}\n".red
