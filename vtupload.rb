@@ -42,7 +42,11 @@ if ! @path
 	help
 end
 
-@apikey = "***REMOVED***"
+if File.exists?("api.key")
+	@apikey = File.read("api.key").chomp!
+else 
+	raise "Couldn't find api.key file to get apikey!"
+end
 @files_to_check = Array.new
 checked_files_to_report = Array.new
 
