@@ -27,7 +27,7 @@ malwr.rb -f <FILE>
 end
 
 
-@apikey = "56e9b85775a320bb7f03a3728e4104484f541b141893cf574495e6cca55f5297"
+@apikey = ""
 @files_to_check = Array.new
 @checked_files_to_report = Array.new
 
@@ -85,6 +85,9 @@ def get_report(__file)
 end 
 
 def populate_files(xpath)
+	if xpath.nil?
+		raise "Null argument.  Script called without arguments?"
+	end
 	Dir.new(xpath).entries.each do |dir|
 		next if dir =~ /^\.\.?$/
 		#puts "### DEBUG: #{dir}".red
