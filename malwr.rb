@@ -18,7 +18,7 @@ opts.each do |opt, arg|
 	case opt
 		when '--help'
 			puts <<-EOF
-malwr.rb -f <FILE>
+malwr.rb [-f <FILE>] -p <path>
 			EOF
 		when '--file'
 			@file = arg.to_s
@@ -34,11 +34,11 @@ end
 
 def send_file(fqfile)
 	puts "Fully qualified file name: #{fqfile}"
-
-	__file = Pathname.new(fqfile).basename
+	basename = Pathname.new(fqfile).basename
+	puts "Basename:  #{basename}"
 
 	response = JSON.parse(RestClient.post('https://www.virustotal.com/vtapi/v2/file/scan',
-		:apikey => @apikey, :file => "#{__file}", :file => File.new(fqfile)))
+		:apikey => @apikey, :file => "#{basename}", :file => File.new(fqfile)))
 
 	print "scan_id: "
 	puts "#{response['scan_id']}".green
@@ -60,6 +60,8 @@ def get_report(__file)
 	begin
 		url = "https://www.virustotal.com/vtapi/v2/file/report"
 		params = {:resource => __file.to_s, :apikey => @apikey}
+		#puts params.inspect
+		#puts RestClient.post(url, params).inspect
 		rep_response = JSON.parse(RestClient.post(url, params))
 		print "md5: "
 		puts "#{rep_response["md5"]}".green
@@ -78,8 +80,7 @@ def get_report(__file)
 		}
 	rescue Exception => e
 		#$stderr.print "Report request files: " + $!
-		$stderr.print "Exception: #{e.inspect}".red
-		return 255
+		$stderr.print "Exception: #{e.inspect}\n".red
 	end
 end 
 
@@ -121,27 +122,30 @@ def populate_files(xpath)
 	end
 end
 
-if @file								# just process one file
+if @file									# just process one file
 	puts "send_file".green
-	send_file(@file)
+	send_file("#{@path}/#{@file}")
 	puts "Wait 300 secs..."
 	#Readline.readline('> ', true)
 	sleep(300)
 	puts "get_report()".green
-	get_report(@file)					# filename as md5 checksum
-else									# process all files in the directory tree 
+	get_report(@file)						# filename as md5 checksum
+else										# process all files in the directory tree 
 	populate_files(@path)
 
 	counter = 0;
 	@files_to_check.each { |file|
-		send_file(file)			# file is full (relative) path here
+		next if file =~ /\/..\//
+		send_file(file)						# file is full (relative) path here
 		sleep(20)
 		@checked_files_to_report.push(file)
 		counter += 1
 		break if counter >= 10
 	}
 
+	sleep(300)
+
 	@checked_files_to_report.each { |file|
-		ev = get_report(file)
+		get_report(file)
 	}
 end
