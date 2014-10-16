@@ -8,7 +8,7 @@ saves the files as the md5 checksum for the name.  This makes it difficult to co
 <h2>Changes:</h2>
 <ul>
 	<li>10/15/2014 - Provides minimal output/feedback when uploading in CSV mode</li>
-</ul
+</ul>
 <h2>TODO:</h2>
 <ul>
 	<li>Check file size and skip files greater then ~15MB</li>
