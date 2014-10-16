@@ -113,6 +113,18 @@ def get_csv_report(_file)
         rep_response = JSON.parse(RestClient.post(url, params))
         #puts rep_response.inspect
 		detects = Array.new
+		print "File: "
+		puts "#{_file}".green
+		print "MD5: "
+		puts "#{rep_response['md5']}".green
+		print "Found ".light_black
+		if rep_response['positives'] == 0
+			print "#{rep_response['positives']}".green
+		else
+			print "#{rep_response['positives']}".yellow
+		end
+		print " out of ".light_black
+		puts "#{rep_response['total']}".red
 		rep_response['scans'].sort.each { |scan|
 			if scan[1]['detected'] == true
 				if ! detects.include?("#{scan[0]}:#{scan[1]["result"]}")
