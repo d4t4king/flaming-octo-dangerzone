@@ -11,6 +11,7 @@ saves the files as the md5 checksum for the name.  This makes it difficult to co
 </ul>
 <h2>TODO:</h2>
 <ul>
+	<li>Enable hash lookups (faster, lighter)</li>
 	<li>Check file size and skip files greater then ~15MB</li>
 	<li>Allow --csv flag to accept alternative file name.</li>
 	<li>Allow alternate filename/location for api.key file.</li>
