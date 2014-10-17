@@ -3,6 +3,7 @@
 require 'colorize'
 require 'net/ftp'
 require 'getoptlong'
+require 'pathname'
 
 opts = GetoptLong.new(
 	[ '--help', '-h', GetoptLong::NO_ARGUMENT ],
@@ -28,5 +29,15 @@ opts.each do |opt, arg|
 	end
 end
 
-ftp = Net::FTP.new('salt.dataking.us')
+def get_files(_path)
+	pn = Pathname.new(_path)
+	pn.each_filename do { |file|
+		puts file
+	}
+end
+
+get_files(@path)
+
+#ftp = Net::FTP.new('salt.dataking.us')
+#ftp.login(user="joe", passwd="pep")
 
