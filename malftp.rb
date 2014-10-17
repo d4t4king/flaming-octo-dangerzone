@@ -31,8 +31,9 @@ end
 
 def get_files(_path)
 	pn = Pathname.new(_path)
-	pn.each_filename do { |file|
-		puts file
+	pn.each_entry { |entry|
+		next if entry == '.' || entry == '..'
+		puts entry
 	}
 end
 
