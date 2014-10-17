@@ -8,12 +8,14 @@ require 'uri'
 require 'readline'
 require 'pathname'
 require 'csv'
+require 'filesize'
 
 opts = GetoptLong.new(
 	[ '--help', '-h', GetoptLong::NO_ARGUMENT ],
 	[ '--path', '-p', GetoptLong::REQUIRED_ARGUMENT ],
 	[ '--file', '-f', GetoptLong::REQUIRED_ARGUMENT ],
-	[ '--csv', GetoptLong::NO_ARGUMENT ]
+	[ '--csv', GetoptLong::NO_ARGUMENT ],
+	[ '--skip', '-s', GetoptLong::NO_ARGUMENT ]
 )
 
 def help
@@ -33,6 +35,8 @@ opts.each do |opt, arg|
 			@path = arg.to_s
 		when '--csv'
 			@csv = true
+		when '--skip'
+			@skip = true
 		else
 			help
 	end
@@ -53,6 +57,13 @@ checked_files_to_report = Array.new
 def send_file(fqfile)
 	puts "Fully qualified file name: #{fqfile}"
 	__file = Pathname.new(fqfile).basename
+
+	fs = File.size?(fqfile)
+	puts "** #{Filesize.from("#{fs} B").pretty} **".magenta
+	if fs > 15728540
+		puts "File size too big: #{Filesize.from("#{fs} B").pretty}".red
+		return 0
+	end
 
 	response = JSON.parse(RestClient.post('https://www.virustotal.com/vtapi/v2/file/scan',
 		:apikey => @apikey, :file => "#{__file}", :file => File.new(fqfile)))
@@ -183,24 +194,32 @@ def populate_files(xpath)
 end
 
 if @file								# just process one file
-	puts "send_file".green
-	send_file("#{@path}/#{@file}")
-	puts "Wait 300 secs..."
-	#Readline.readline('> ', true)
-	sleep(300)
+	if @skip
+		puts "Skipping file uploads.  Let see what we get just pulling reports with hashes."
+	else
+		puts "send_file".green
+		send_file("#{@path}/#{@file}")
+		puts "Wait 300 secs..."
+		#Readline.readline('> ', true)
+		sleep(300)
+	end
 	puts "get_report()".green
 	get_report(@file)					# filename as md5 checksum
 else									# process all files in the directory tree 
 	populate_files(@path)
 
-	#counter = 0;
-	@files_to_check.each { |file|
-		send_file(file)			# file is full (relative) path here
-		sleep(20)
-		checked_files_to_report.push(file)
-		#counter += 1
-		#break if counter >= 10
-	}
+	if @skip
+		puts "Skipping file uploads.  Let see what we get just pulling reports with hashes."
+	else
+		#counter = 0;
+		@files_to_check.each { |file|
+			send_file(file)			# file is full (relative) path here
+			sleep(20)
+			checked_files_to_report.push(file)
+			#counter += 1
+			#break if counter >= 10
+		}
+	end
 
 	#puts "Last submission.  Check permalink and hit ENTER, when done.".light_black
 	#Readline.readline('> ', true)
@@ -222,10 +241,18 @@ else									# process all files in the directory tree
 			}
 		end
 	else
-		checked_files_to_report.each { |file|
-			basename = Pathname.new(file).basename
-			get_report(basename)
-			sleep(20)
-		}
+		if @skip
+			@files_to_check.each { |file|
+				basename = Pathname.new(file).basename
+				get_report(basename)
+				sleep(20)
+			}
+		else
+			checked_files_to_report.each { |file|
+				basename = Pathname.new(file).basename
+				get_report(basename)
+				sleep(20)
+			}
+		end
 	end
 end
