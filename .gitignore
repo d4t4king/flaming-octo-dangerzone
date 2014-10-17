@@ -4,3 +4,6 @@ vtupload.csv
 api.key
 ftp.login
 ftp_down
+mdl.xml
+malwr/*
+malwr/.*
