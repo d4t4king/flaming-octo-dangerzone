@@ -5,6 +5,7 @@
 
 <h2>malftp.rb</h2>
 <p>Upload or download malware downloaded by maltrieve (link TBD) from/to the ftp server.</p>
+<p>Expects a file named "ftp.login" with the user credentials on a single line separated by a colon: "user:pass"</p>
 
 <h3>Changes:</h3>
 
@@ -17,6 +18,7 @@
 
 <h2>vtupload.rb</h2>
 <p>This is a quick project to upload downloaded malware (from maltrieve) to virustotal.com, for identification.</p>
+<p>Expects a file named "api.key" with your Virustotal API key on a single line.</p>
 
 <p>maltrieve (add link later) downloads malware from various sources for security researchers and analysts.  Yet, the tool
 saves the files as the md5 checksum for the name.  This makes it difficult to compare to detection sources.</p>
