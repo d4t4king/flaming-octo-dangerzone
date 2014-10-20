@@ -30,13 +30,27 @@ def process_mdl
 	return urls
 end
 
-source_urls = process_mdl
+def process_simple_list
+	urls = Array.new
+	open("https://vxvault.siri-urz.net/URL_List.php", {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).each do |line|
+		line.chomp!
+		if line =~ /^http(s)?:\/\//
+			puts "|#{line}|".green
+			urls.push(line)
+		end
+	end
+	return urls
+end
+
+
+source_urls = process_simple_list
 i = 0
 #puts source_urls.inspect
 source_urls.each do |url|
 	file = Tempfile.new('tmp')
 	begin
-		Net::HTTP.start("http://#{url}") { |http|
+		url.chomp
+		Net::HTTP.start("#{url}") { |http|
 			pn = Pathname.new(url)
 			resp = http.get(pn.basename)
 			r_md5 = Digest::MD5.hexdigest(resp)
