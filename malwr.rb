@@ -32,7 +32,7 @@ end
 
 def process_simple_list
 	urls = Array.new
-	open("https://vxvault.siri-urz.net/URL_List.php", {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).each do |line|
+	open("http://malwareurls.joxeankoret.com/normal.txt", {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).each do |line|
 		line.chomp!
 		if line =~ /^http(s)?:\/\//
 			puts "|#{line}|".green

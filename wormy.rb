@@ -2,6 +2,7 @@
 
 require 'colorize'
 require 'net/ping'
+#require 'whois'
 
 def gen_random_ip
 	first = (0..255).to_a.sample
@@ -14,10 +15,14 @@ def gen_random_ip
 	return randip
 end
 
+c = Whois::Client.new
+
 # ICMP (?)
 (0..999).each { |itr|
 	randip = gen_random_ip
 	pe = Net::Ping::External.new(randip)
+	#r = c.lookup(randip)
+	#puts "#{r}".magenta
 	if pe.ping?
 		puts "#{randip}".green
 	else 
