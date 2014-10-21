@@ -115,8 +115,11 @@ i = 0
 #	end
 #end
 
+#exit 0
+
 source_urls.each do |url|
-	puts "|#{url}|".green
+	#puts "|#{url}|".green
+	puts "|#{url}|"
 	file = Tempfile.new('tmp')
 	begin
 		#url.chomp
@@ -133,14 +136,16 @@ source_urls.each do |url|
 		magic = MimeMagic.by_magic(File.open(file))
 		puts "#{url} : #{magic}"
 		puts "f:#{md5} : r:#{r_md5}"
-		if i >= 20
-			break
-		end
-		i =+ 1
+		#if i >= 20
+		#	break
+		#end
+		#i =+ 1
 	rescue Exception => e
-		puts "### ERROR: #{url}".red
-		puts "#{e.message}".red
-		puts "#{e.backtrace}".red
+		#puts "### ERROR: #{url}".red
+		puts "### ERROR: #{url}"
+		#puts "#{e.message}".red
+		puts "#{e.message}"
+		#puts "#{e.backtrace}".red
 	ensure
 		file.close
 	end
