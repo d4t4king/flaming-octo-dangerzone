@@ -15,10 +15,10 @@ def gen_random_ip
 	return randip
 end
 
-c = Whois::Client.new
+#c = Whois::Client.new
 
 # ICMP (?)
-(0..999).each { |itr|
+(0..99999).each { |itr|
 	randip = gen_random_ip
 	pe = Net::Ping::External.new(randip)
 	#r = c.lookup(randip)
@@ -31,7 +31,7 @@ c = Whois::Client.new
 }
 
 # TCP
-(0..999).each { |itr|
+(0..99999).each { |itr|
 	randip = gen_random_ip
 	pe = Net::Ping::TCP.new(randip, 6667)
 	if pe.ping?

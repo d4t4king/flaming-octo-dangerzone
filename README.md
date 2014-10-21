@@ -52,3 +52,15 @@ saves the files as the md5 checksum for the name.  This makes it difficult to co
 
 <h3>malwr.rb</h3>
 <p>This is intended to be, basically, a (simplified) ruby rewrite of maltrieve (link TBD).  Maltrieve has some downloading issues, and also offers features that I don't care about.  It is currently a work-in-progress.</p>
+
+<hr />
+
+<h3>spam.rb</h3>
+Sends files to the specified address.
+
+<h3>Changes:</h3>
+
+<h3>TODO:</h3>
+<ul>
+	<li>Provide a "--link" option to emulate (spear-)phishing messages, that would send a URL versus a file.</li>
+</ul>

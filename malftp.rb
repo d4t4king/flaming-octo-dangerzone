@@ -42,8 +42,8 @@ opts.each do |opt, arg|
 	end
 end
 
-if ! @upload || ! @download
-	puts "No options specified!".red
+if ! @upload && ! @download
+	puts "Upload or download not specified.".red
 	help
 end 
 
