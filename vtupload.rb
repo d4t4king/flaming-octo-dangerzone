@@ -49,27 +49,29 @@ end
 
 # set up the log file
 logfile = File.open("vtupload.log", File::WRONLY | File::APPEND | File::CREAT)
-logger = Logger.new(logfile)
-logger.level = Logger::INFO
+@logger = Logger.new(logfile)
+@logger.level = Logger::INFO
 
 if File.exists?("api.key")
 	@apikey = File.read("api.key").chomp!
-	logger.info("Got API key.")
+	@logger.info("Got API key.")
 else 
 	raise "Couldn't find api.key file to get apikey!"
-	logger.fatal("Couldn't find api.key file to get apikey!")
+	@logger.fatal("Couldn't find api.key file to get apikey!")
 end
 @files_to_check = Array.new
 checked_files_to_report = Array.new
 
 def send_file(fqfile)
 	puts "Fully qualified file name: #{fqfile}"
+	@logger.info("Sending file: #{fqfile}")
 	__file = Pathname.new(fqfile).basename
 
 	fs = File.size?(fqfile)
 	puts "** #{Filesize.from("#{fs} B").pretty} **".magenta
 	if fs > 15728540
 		puts "File size too big: #{Filesize.from("#{fs} B").pretty}".red
+		@logger.error("File size too big: #{Filesize.from("#{fs} B").pretty}")
 		return 0
 	end
 
@@ -118,9 +120,11 @@ def get_report(__file)
 				end
 			}
 		end
+		@logger.info("File: #{__file}.  Found #{rep_response["positives"]} out of #{rep_response["total"]}.")
 	rescue Exception => e
 		#$stderr.print "Report request files: " + $!
 		$stderr.print "Exception: #{e.inspect}\n".red
+		@logger.error("ERROR: #{e.message}")
 	end
 end 
 
@@ -151,16 +155,19 @@ def get_csv_report(_file)
 				end
 			end
 		}
+		@logger.info("File: #{_file}. Found #{rep_response["positives"]} out of #{rep_response["total"]}.")
 		csv_data = ["#{_file}", "#{rep_response['md5']}", "#{rep_response['sha1']}",
 			"#{rep_response['positives']}", "#{rep_response['total']}", "#{detects.join("|")}"]
 		return csv_data
 	rescue Exception => e
 		$stderr.print "Exception #{e.inspect}\n".red
+		@logger.error("ERROR: #{e.message}")
 		return nil
 	end
 end
 
 def populate_files(xpath)
+	@logger.info("Collecting files in #{@path}.")
 	if xpath.nil?
 		raise "Null argument.  Script called without arguments?"
 	end
@@ -199,16 +206,17 @@ def populate_files(xpath)
 			end
 		end
 	end
+	@logger.info("File collection done.")
 end
 
 ### Start Main
 if @file								# just process one file
 	if @skip
 		puts "Skipping file uploads.  Let see what we get just pulling reports with hashes."
-		logger.info("Skipping file uploads.  Let see what we get just pulling reports with hashes.")
+		@logger.info("Skipping file uploads.  Let see what we get just pulling reports with hashes.")
 	else
 		puts "send_file".green
-		logger.info("Sending file: #{@path}/#{@file}")
+		@logger.info("Sending file: #{@path}/#{@file}")
 		send_file("#{@path}/#{@file}")
 		puts "Wait 300 secs..."
 		#Readline.readline('> ', true)
@@ -221,11 +229,10 @@ else									# process all files in the directory tree
 
 	if @skip
 		puts "Skipping file uploads.  Let see what we get just pulling reports with hashes."
-		logger.info("Skipping file uploads.  Let see what we get just pulling reports with hashes.")
+		@logger.info("Skipping file uploads.  Let see what we get just pulling reports with hashes.")
 	else
 		#counter = 0;
 		@files_to_check.each { |file|
-			logger.info("Sending file: #{@file}")
 			send_file(file)			# file is full (relative) path here
 			sleep(20)
 			checked_files_to_report.push(file)
@@ -238,7 +245,7 @@ else									# process all files in the directory tree
 	#Readline.readline('> ', true)
 
 	if @csv
-		logger.info("Saving to csv.")
+		@logger.info("Saving to csv.")
 		lc = 0
 		if @skip
 			CSV.open("vtupload.csv", "wb") do |csv|
@@ -287,3 +294,5 @@ else									# process all files in the directory tree
 		end
 	end
 end
+@logger.info("All tasks complete. Exiting.")
+exit 0
