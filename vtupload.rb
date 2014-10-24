@@ -21,7 +21,13 @@ opts = GetoptLong.new(
 
 def help
 	puts <<-EOF
-vtupload.rb -p|--path <path> [-f|--file <FILE>] [-h|--help] [--csv]
+vtupload.rb -p|--path <path> [-f|--file <FILE>] [-h|--help] [--csv] [-s|--skip]
+
+-p|--path		Required.  The relative or absolute path where the files to upload are stored.
+-f|--file		Single file to upload and report.
+--csv			Write report data to vtupload.csv
+--skip			Skip uploading files, and just search using the MD5 checksum.
+-|--help		Display this message and exit.
 	EOF
 	exit 0
 end 
@@ -99,8 +105,23 @@ def get_report(__file)
 		url = "https://www.virustotal.com/vtapi/v2/file/report"
 		params = {:resource => __file, :apikey => @apikey}
 		#rep_response = RestClient.post(url, params)
-		rep_response = JSON.parse(RestClient.post(url, params))
-		#puts rep_response.inspect
+		begin
+			rep_response = JSON.parse(RestClient.post(url, params))
+			#puts "|#{rep_response.inspect}|"
+			if rep_response["verbose_msg"] == "The requested resource is not among the finished, queued or pending scans"
+				puts "Hash not found.".yellow
+				puts "Resource is either being scanned, or is unknown.".yellow
+				return nil
+			#elsif RestClient.post(url, params).nil? ||
+			#	  RestClient.post(url, params) == ""
+			#	puts "Got no response for resource: #{__file}"
+			#	return nil
+			end
+		rescue JSON::ParserError => e
+			puts "#{e.message}".magenta
+			puts RestClient.post(url, params).inspect
+			return nil
+		end
 		print "md5: "
 		puts "#{rep_response["md5"]}".green
 		print "sha1: "
@@ -121,7 +142,7 @@ def get_report(__file)
 			}
 		end
 		@logger.info("File: #{__file}.  Found #{rep_response["positives"]} out of #{rep_response["total"]}.")
-	rescue Exception => e
+	rescue StandardError => e
 		#$stderr.print "Report request files: " + $!
 		$stderr.print "Exception: #{e.inspect}\n".red
 		@logger.error("ERROR: #{e.message}")
@@ -133,8 +154,25 @@ def get_csv_report(_file)
 		url = "https://www.virustotal.com/vtapi/v2/file/report"
         params = {:resource => _file, :apikey => @apikey}
         #rep_response = RestClient.post(url, params)
-        rep_response = JSON.parse(RestClient.post(url, params))
-        #puts rep_response.inspect
+		begin
+        	rep_response = JSON.parse(RestClient.post(url, params))
+        	#puts "|#{rep_response.inspect}|"
+			if rep_response["verbose_msg"] == "The requested resource is not among the finished, queued or pending scans"
+				puts "Hash not found.".yellow
+				puts "Resource is either being scanned, or is unknown.".yellow
+				sleep(20)
+				return nil
+			#elsif RestClient.post(url, params).nil? ||
+			#	  RestClient.post(url, params) == ""
+			#	puts "Got no response for resource: #{__file}"
+			#	return nil
+			end
+		rescue JSON::ParserError => pe
+			puts "#{pe.message}".magenta
+			#puts RestClient.post(url, params).inspect
+			sleep(20)
+			return nil
+		end
 		detects = Array.new
 		print "File: "
 		puts "#{_file}".green
@@ -159,7 +197,7 @@ def get_csv_report(_file)
 		csv_data = ["#{_file}", "#{rep_response['md5']}", "#{rep_response['sha1']}",
 			"#{rep_response['positives']}", "#{rep_response['total']}", "#{detects.join("|")}"]
 		return csv_data
-	rescue Exception => e
+	rescue StandardError => e
 		$stderr.print "Exception #{e.inspect}\n".red
 		@logger.error("ERROR: #{e.message}")
 		return nil
@@ -256,6 +294,7 @@ else									# process all files in the directory tree
 							"Found", "Total", "Detections"]
 					else
 						line = get_csv_report(basename)
+						next if line.nil?
 						csv << line
 					end
 					sleep(20)
@@ -271,6 +310,7 @@ else									# process all files in the directory tree
 							"Found", "Total", "Detections"]
 					else
 						line = get_csv_report(basename)
+						next if line.nil?
 						csv << line
 					end
 					sleep(20)
