@@ -58,7 +58,7 @@ def process_simple_list(_url)
 				urls.push(line)
 			end
 		end
-	rescue Exception => e
+	rescue StandardError => e
 		puts "#{e.message}".red
 		return nil
 	end
@@ -74,7 +74,8 @@ def process_urlquery
 			url = $1
 			urls.push(url)
 		else
-			puts "No match.".red
+			print "No match.".red
+			puts item.to_s.light_red
 		end
 	end
 	return urls
@@ -112,7 +113,7 @@ if ! defined?(@proxy) || @proxy == "" || @proxy.nil?
 	@proxy = cfg['proxy']
 end
 if ! defined?(@dumpdir) || @dumpdir == "" || @dumpdir.nil?
-	@proxy = cfg['dumpdir']
+	@dumpdir = cfg['dumpdir']
 end
 if ! defined?(@logfile) || @logfile == "" || @logfile.nil?
 	@logfile = cfg['logfile']
@@ -149,36 +150,40 @@ end
 puts "Processing source URLs"
 log.info("Processing source URLs.")
 malware_urls = Array.new
-log.debug("Collecting urls from www.malwarecomainlist.com.")
-process_rss_descr("http://www.malwaredomainlist.com/hostslist/mdl.xml").each do |u|
-	malware_urls.push(u)
+begin
+	log.debug("Collecting urls from www.malwarecomainlist.com.")
+	process_rss_descr("http://www.malwaredomainlist.com/hostslist/mdl.xml").each do |u|
+		malware_urls.push(u)
+	end
+	log.debug("Done.")
+	log.debug("Collecting urls from malc0de.com.")
+	process_rss_descr("http://malc0de.com/rss/").each do |u|
+		malware_urls.push(u)
+	end
+	log.debug("Done.")
+	#log.debug("Collecting urls from vxvault.siri-urz.net.")
+	#process_simple_list("http://vxvault.siri-urz.net/URL_List.php").each do |u|
+	#	maleware_urls.push(u)
+	#end
+	#log.debug("Done.")
+	log.debug("Collectin urls from malwareurls.joxeankoret.com.")
+	process_simple_list("http://malwareurls.joxeankoret.com/normal.txt").each do |u|
+		malware_urls.push(u)
+	end
+	log.debug("Done.")
+	log.debug("Collecting urls from iurlquery.net.")
+	process_urlquery.each do |u|
+		malware_urls.push(u)
+	end
+	log.debug("Done.")
+	#log.debug("Collecting urls from support.clean-mx.de.")
+	#process_rss_title("http://support.clean-mx.de/clean-mx/rss?scope=viruses&limit=0%2C64").each do |u|
+	#	malware_urls.push(u)
+	#end
+	#log.debug("Done.")
+rescue StandardError => e
+	puts "#{e.message}".red
 end
-log.debug("Done.")
-log.debug("Collecting urls from malc0de.com.")
-process_rss_descr("http://malc0de.com/rss/").each do |u|
-	malware_urls.push(u)
-end
-log.debug("Done.")
-#log.debug("Collecting urls from vxvault.siri-urz.net.")
-#process_simple_list("http://vxvault.siri-urz.net/URL_List.php").each do |u|
-#	maleware_urls.push(u)
-#end
-#log.debug("Done.")
-log.debug("Collectin urls from malwareurls.joxeankoret.com.")
-process_simple_list("http://malwareurls.joxeankoret.com/normal.txt").each do |u|
-	malware_urls.push(u)
-end
-log.debug("Done.")
-log.debug("Collecting urls from iurlquery.net.")
-process_urlquery.each do |u|
-	malware_urls.push(u)
-end
-log.debug("Done.")
-#log.debug("Collecting urls from support.clean-mx.de.")
-#process_rss_title("http://support.clean-mx.de/clean-mx/rss?scope=viruses&limit=0%2C64").each do |u|
-#	malware_urls.push(u)
-#end
-#log.debug("Done.")
 log.info("Done collecting URLs from sources.")
 
 if @debug
@@ -187,12 +192,13 @@ if @debug
 end
 
 # download samples
+log.debug("Start sample collection.")
 i = 0
 malware_urls.each do |u|
 	puts u
-	file = Tempfile.new('tmp')
-	if ! u =~ /^http(?:s)?:\/\//
-		u = "http://#{url}"
+	#file = Tempfile.new('tmp')
+	if u !~ /^http(?:s)?:\/\//
+		u = "http://#{u}"
 	end
 	if u =~ /^http(?:s)?:\/\/(.*?)(\/.*)/
 		host = $1
@@ -203,19 +209,34 @@ malware_urls.each do |u|
 		next
 	end
 	begin
-		Net::HTTP::Proxy(pxhost, pxport).start(host) { |http|
-			resp = http.get(rest)
-			file.write(resp.body)
-		}
-	rescue Exception => e
+		if @proxy
+			Net::HTTP.start(host, pxhost, pxport, { :open_timeout => 10, :read_timeout => 10 }) { |http|
+				resp = http.get(rest)
+				#bn = rest.split(/\//).last
+				md5 = Digest::MD5.new
+				md5.update(resp.body)
+				open("#{@dumpdir}/#{md5.hexdigest}", "wb") do |file|
+					file.write(resp.body)
+				end
+			}
+		else 
+			Net::HTTP.start(host, { :open_timeout => 10, :read_timeout => 10 }) { |http|
+				resp = http.get(rest)
+				#bn = rest.split(/\//).last
+				md5 = Digest::MD5.new
+				md5.update(resp.body)
+				open("#{@dumpdir}/#{md5.hexdigest}", "wb") do |file|
+					file.write(resp.body)
+				end
+			}
+		end
+	rescue StandardError => e
 		puts e.message.to_s.red
-		log.error("ERROR: #{e.message}")
-	ensure
-		file.close
+		log.error("#{e.message} PROXY: #{pxhost}:#{pxport} HOST: #{host}")
 	end	
-	if i >= 25
-		break
-	end
+	#if i >= 25
+	#	break
+	#end
 	i += 1
 end
 
