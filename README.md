@@ -64,6 +64,8 @@ saves the files as the md5 checksum for the name.  This makes it difficult to co
 <ul>
 	<li>Add MimeMagic and/or categorization script.</li>
 	<li>Fix URLs with no paths or parameters (FQDN only).</li>
+	<li>Allow loading and dumping of past urls.</li>
+	<li>Allow loading and dumping of past hashes</li>
 </ul>
 
 <hr />
