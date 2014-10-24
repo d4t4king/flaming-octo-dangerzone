@@ -200,6 +200,7 @@ malware_urls.each do |u|
 		log.debug("Host: #{host}, REST: #{rest}")
 	else 
 		puts "Couldn't match host in URL: #{u}".red
+		next
 	end
 	begin
 		Net::HTTP::Proxy(pxhost, pxport).start(host) { |http|
