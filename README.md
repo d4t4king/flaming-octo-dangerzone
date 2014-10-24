@@ -61,6 +61,10 @@ saves the files as the md5 checksum for the name.  This makes it difficult to co
 </ul>
 
 <h3>TODO:</h3>
+<ul>
+	<li>Add MimeMagic and/or categorization script.</li>
+	<li>Fix URLs with no paths or parameters (FQDN only).</li>
+</ul>
 
 <hr />
 
