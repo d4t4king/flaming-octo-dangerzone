@@ -28,6 +28,8 @@ saves the files as the md5 checksum for the name.  This makes it difficult to co
 	<li>10/15/2014 - Provides minimal output/feedback when uploading in CSV mode</li>
 	<li>10/16/2014 - Enable hash lookups (faster, lighter) [--skip] </li>
 	<li>10/16/2014 - Check file size and skip files greater than ~15MB</li>
+	<li>10/24/2014 - Better handling of responses when a result isn't found for a search</li>
+	<li>10/24/2014 - Better handling of responses when requests are sent too fast.
 </ul>
 <h3>TODO:</h3>
 <ul>
@@ -52,6 +54,13 @@ saves the files as the md5 checksum for the name.  This makes it difficult to co
 
 <h3>malwr.rb</h3>
 <p>This is intended to be, basically, a (simplified) ruby rewrite of maltrieve (link TBD).  Maltrieve has some downloading issues, and also offers features that I don't care about.  It is currently a work-in-progress.</p>
+
+<h3>Changes:</h3>
+<ul>
+	<li>10/24/2014 - Improved functionality.  Actually downloads files, now.</li>
+</ul>
+
+<h3>TODO:</h3>
 
 <hr />
 
