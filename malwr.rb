@@ -2,6 +2,7 @@
 
 require 'colorize'
 require 'net/http'
+require 'net/https'
 require 'getoptlong'
 require 'logger'
 require 'configparser'
@@ -9,6 +10,7 @@ require 'open-uri'
 require 'nokogiri'
 require 'rss'
 require 'digest/md5'
+require 'fileutils'
 
 def help
 	puts <<-EOF
@@ -114,6 +116,9 @@ if ! defined?(@proxy) || @proxy == "" || @proxy.nil?
 end
 if ! defined?(@dumpdir) || @dumpdir == "" || @dumpdir.nil?
 	@dumpdir = cfg['dumpdir']
+	if ! File.directory?(@dumpdir) || Dir.exist?(@dumpdir)
+		FileUtils.mkdir_p(@dumpdir)
+	end
 end
 if ! defined?(@logfile) || @logfile == "" || @logfile.nil?
 	@logfile = cfg['logfile']
