@@ -33,6 +33,7 @@ saves the files as the md5 checksum for the name.  This makes it difficult to co
 </ul>
 <h3>TODO:</h3>
 <ul>
+	<li>Add a "resume" feature to resume uploads, or report checks.</li>
 	<li>Allow --csv flag to accept alternative file name.</li>
 	<li>Allow alternate filename/location for api.key file.</li>
 </ul>
