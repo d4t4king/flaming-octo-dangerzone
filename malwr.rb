@@ -204,6 +204,10 @@ malware_urls.each do |u|
 		host = $1
 		rest = $2
 		log.debug("Host: #{host}, REST: #{rest}")
+	elsif u =~ /^http(?:s)?:\/\/(.*?)\?(.*)/
+		host = $1
+		rest = $2
+		log.debug("Host: #{host}, REST: #{rest}")
 	else 
 		puts "Couldn't match host in URL: #{u}".red
 		next
