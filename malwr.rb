@@ -2,6 +2,7 @@
 
 require 'colorize'
 require 'net/http'
+require 'net/https'
 require 'getoptlong'
 require 'logger'
 require 'configparser'
@@ -9,6 +10,7 @@ require 'open-uri'
 require 'nokogiri'
 require 'rss'
 require 'digest/md5'
+#require 'fileutils'
 
 def help
 	puts <<-EOF
@@ -145,6 +147,16 @@ if @debug
 else
 	log.info("Debugging disabled.")
 end
+unless File.exist?(@dumpdir) && File.directory?(@dumpdir)
+	log.debug("Save directory doesn't exist.  Creating it.")
+	#FileUtils.mkdir_p(@dumpdir)
+	tokens = @dumpdir.split("/")
+	1.upto(token.size) do |n|
+		dir = tokens[0..n]
+		Dir.mkdir(dir) unless Dir.exist?(dir)
+	end
+end
+	
 
 # process source urls
 puts "Processing source URLs"
