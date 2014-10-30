@@ -75,10 +75,12 @@ def send_file(fqfile)
 
 	fs = File.size?(fqfile)
 	puts "** #{Filesize.from("#{fs} B").pretty} **".magenta
-	if fs > 15728540
+	if fs.nil? || fs == 0
+		return nil
+	elsif fs > 15728540
 		puts "File size too big: #{Filesize.from("#{fs} B").pretty}".red
 		@logger.error("File size too big: #{Filesize.from("#{fs} B").pretty}")
-		return 0
+		return nil
 	end
 
 	response = JSON.parse(RestClient.post('https://www.virustotal.com/vtapi/v2/file/scan',
