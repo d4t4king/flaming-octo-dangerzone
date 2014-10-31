@@ -116,9 +116,9 @@ if ! defined?(@proxy) || @proxy == "" || @proxy.nil?
 end
 if ! defined?(@dumpdir) || @dumpdir == "" || @dumpdir.nil?
 	@dumpdir = cfg['dumpdir']
-	if ! File.directory?(@dumpdir) || Dir.exist?(@dumpdir)
-		FileUtils.mkdir_p(@dumpdir)
-	end
+	#if ! File.directory?(@dumpdir) || Dir.exist?(@dumpdir)
+	#	FileUtils.mkdir_p(@dumpdir)
+	#end
 end
 if ! defined?(@logfile) || @logfile == "" || @logfile.nil?
 	@logfile = cfg['logfile']
