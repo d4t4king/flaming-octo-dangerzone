@@ -19,7 +19,7 @@ GEM
     net (0.2.1)
       activesupport
     netrc (0.7.9)
-    nokogiri (1.6.3.1)
+    nokogiri (1.10.4)
       mini_portile (= 0.6.0)
     rest_client (1.7.3)
       netrc (~> 0.7.7)
