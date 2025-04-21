@@ -14,15 +14,18 @@ GEM
     i18n (0.6.11)
     json (1.8.1)
     logger (1.2.8)
-    mini_portile (0.6.0)
+    mini_portile2 (2.8.8)
     minitest (5.4.2)
     net (0.2.1)
       activesupport
     netrc (0.7.9)
-    nokogiri (1.10.4)
-      mini_portile (= 0.6.0)
+    nokogiri (1.18.8)
+      mini_portile2 (~> 2.8.2)
+      racc (~> 1.4)
+    racc (1.8.1)
     rest_client (1.7.3)
       netrc (~> 0.7.7)
+    ruby-filemagic (0.7.3)
     thread_safe (0.3.4)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
@@ -40,6 +43,7 @@ DEPENDENCIES
   json
   logger
   net
-  nokogiri
+  nokogiri (>= 1.10.4)
   rest_client
+  ruby-filemagic
   whois
